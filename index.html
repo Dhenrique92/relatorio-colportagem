@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Chosen Palette: "Warm Neutral Harmony" - A base de brancos e cinzas quentes (slate), com azul para métricas gerais, verde para equipes e roxo para associações, criando uma diferenciação clara e uma atmosfera calma e profissional. -->
+    <!-- Application Structure Plan: A Single-Page Application (SPA) with a tab-based navigation system. The structure is designed for thematic exploration rather than linear reading. The main sections are: "Painel Geral" (for high-level metrics), "Equipes e Associações" (for detailed comparison), and "Festa da Vitória" (for event-specific data). This dashboard approach allows users to quickly jump to the section of interest and interact with the data, which is more engaging and efficient than scrolling through a long report. The interactivity within each tab (e.g., hovering on charts, viewing detailed tables) promotes deeper data exploration. -->
+    <!-- Visualization & Content Choices: 
+        - Goal: Inform (High-level stats) -> Presentation: Key Metric Cards & Bar Chart (Chart.js) -> Interaction: Hover for tooltips. Justification: Provides an immediate, scannable overview of the program's health (Table 1 data).
+        - Goal: Compare (Team & Association popularity) -> Presentation: Horizontal Bar Charts (Chart.js) & HTML Tables -> Interaction: Hover on bars, view data in table format. Justification: Best for comparing frequencies and ranking entities (Tables 2 & 3 data). Horizontal bars accommodate long names.
+        - Goal: Relate (Participation vs. Party Attendance) -> Presentation: Donut Chart & Stacked Bar Chart (Chart.js) -> Interaction: Hover for details. Justification: Donut chart clearly shows the proportion of attendees (Table 4). Stacked bar chart effectively visualizes the correlation between past participation and intent to attend the party (Table 5).
+        - Goal: Explain (Qualitative Insights) -> Presentation: Accordion-style text blocks (HTML/CSS/JS) -> Interaction: Click to expand/collapse. Justification: Presents the report's detailed analysis without cluttering the UI, linking insights directly to the visual data.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <title>Painel de Análise de Colportagem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+        .tab-active {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        .accordion-button.open + .accordion-content {
+             max-height: 1000px;
+        }
+        .accordion-button .arrow {
+            transition: transform 0.3s ease-in-out;
+        }
+        .accordion-button.open .arrow {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="antialiased text-slate-700">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-800">Análise de Engajamento no Programa de Colportagem</h1>
+            <p class="mt-2 text-lg text-slate-600">Um painel interativo sobre a participação dos estudantes e o impacto do programa.</p>
+        </header>
+
+        <div class="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+            
+            <nav class="border-b border-slate-200 mb-6">
+                <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-slate-500">
+                    <li class="mr-2">
+                        <button class="nav-tab inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-slate-600 hover:border-slate-300" data-tab="geral">Painel Geral</button>
+                    </li>
+                    <li class="mr-2">
+                        <button class="nav-tab inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-slate-600 hover:border-slate-300" data-tab="equipes">Equipes e Associações</button>
+                    </li>
+                    <li>
+                        <button class="nav-tab inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-slate-600 hover:border-slate-300" data-tab="festa">Festa da Vitória</button>
+                    </li>
+                </ul>
+            </nav>
+
+            <main>
+                <section id="geral" class="content-section">
+                    <div class="prose max-w-none mb-8">
+                        <p>Esta secção oferece um panorama quantitativo do engajamento estudantil. Os cartões destacam as principais métricas de participação, e o gráfico compara visualmente as diferentes formas de envolvimento, refletindo os dados da Tabela 1 do relatório de análise.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
+                            <h3 class="text-slate-500 font-medium">Colportou nas Últimas Férias</h3>
+                            <p class="text-3xl font-bold text-blue-600">53,9%</p>
+                            <p class="text-sm text-slate-500">48 de 89 respondentes</p>
+                        </div>
+                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
+                            <h3 class="text-slate-500 font-medium">Planeia para as Próximas</h3>
+                            <p class="text-3xl font-bold text-blue-600">61,8%</p>
+                             <p class="text-sm text-slate-500">55 de 89 respondentes</p>
+                        </div>
+                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
+                            <h3 class="text-slate-500 font-medium">Colportou na Faculdade</h3>
+                            <p class="text-3xl font-bold text-blue-600">51,7%</p>
+                             <p class="text-sm text-slate-500">46 de 89 respondentes</p>
+                        </div>
+                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
+                            <h3 class="text-slate-500 font-medium">Presença na Festa</h3>
+                            <p class="text-3xl font-bold text-blue-600">82,0%</p>
+                             <p class="text-sm text-slate-500">73 de 89 respondentes</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-50 rounded-lg p-6">
+                        <h2 class="text-xl font-semibold text-slate-700 mb-4 text-center">Comparativo de Engajamento</h2>
+                        <div class="chart-container">
+                            <canvas id="geralChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="equipes" class="content-section">
+                    <div class="prose max-w-none mb-8">
+                         <p>Explore as equipes e associações mais influentes no programa. Os gráficos mostram a frequência de menções, destacando as entidades com maior participação. Esta análise é baseada nos dados normalizados das Tabelas 2 e 3, que corrigiram inconsistências de formatação para uma contagem precisa.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-green-50 rounded-lg p-6">
+                            <h2 class="text-xl font-semibold text-green-800 mb-4 text-center">Top 10 Equipes Mais Frequentes</h2>
+                            <div class="chart-container h-96 md:h-[500px]">
+                                <canvas id="equipesChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-purple-50 rounded-lg p-6">
+                             <h2 class="text-xl font-semibold text-purple-800 mb-4 text-center">Top 10 Associações Mais Frequentes</h2>
+                            <div class="chart-container h-96 md:h-[500px]">
+                                <canvas id="associacoesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="mt-8">
+                         <div class="border-t border-slate-200 pt-6">
+                            <button class="accordion-button w-full flex justify-between items-center text-left text-lg font-semibold text-slate-700 p-4 bg-slate-100 rounded-lg hover:bg-slate-200">
+                                <span>Análise Adicional sobre Equipes e Associações</span>
+                                <span class="arrow text-blue-500">▼</span>
+                            </button>
+                            <div class="accordion-content prose max-w-none p-4 bg-white rounded-b-lg">
+                                <p>A proeminência de equipes como Shekinah, Alpha e Podium, e de associações como a Paulista Sul (APS), indica a formação de "marcas" fortes e reconhecidas. Estas entidades provavelmente oferecem experiências positivas e consistentes, o que atrai e retém participantes. Compreender os seus modelos operacionais pode fornecer insights valiosos para o fortalecimento de todo o programa de colportagem. A dinâmica de estudantes que permanecem fiéis às suas equipas ou que procuram novas experiências sugere uma comunidade vibrante e adaptável, cujas escolhas são influenciadas por liderança, localização e oportunidades de crescimento.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="festa" class="content-section">
+                    <div class="prose max-w-none mb-8">
+                        <p>Esta secção analisa a intenção de participação na Festa da Vitória e a sua correlação com o envolvimento na colportagem. Os dados da Tabela 4 e 5 mostram que a festa é um evento altamente valorizado, funcionando não apenas como uma celebração, mas como um importante pilar comunitário que atrai até mesmo estudantes não diretamente envolvidos na colportagem recente.</p>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
+                        <div class="lg:col-span-2 bg-yellow-50 rounded-lg p-6">
+                            <h2 class="text-xl font-semibold text-yellow-800 mb-4 text-center">Intenção de Presença na Festa</h2>
+                            <div class="chart-container h-80">
+                                <canvas id="festaChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-3 bg-cyan-50 rounded-lg p-6">
+                            <h2 class="text-xl font-semibold text-cyan-800 mb-4 text-center">Presença na Festa vs. Colportagem (Últimas Férias)</h2>
+                             <div class="chart-container h-80">
+                                <canvas id="correlacaoChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                         <div class="border-t border-slate-200 pt-6">
+                            <button class="accordion-button w-full flex justify-between items-center text-left text-lg font-semibold text-slate-700 p-4 bg-slate-100 rounded-lg hover:bg-slate-200">
+                                <span>Análise sobre o Impacto da Festa</span>
+                                 <span class="arrow text-blue-500">▼</span>
+                            </button>
+                            <div class="accordion-content prose max-w-none p-4 bg-white rounded-b-lg">
+                                <p>A alta taxa de intenção de presença (82,0%) confirma que a festa é um evento central e motivador. Um ponto crucial é que 28 estudantes que não colportaram nas últimas férias ainda planeiam ir à festa. Isto sugere que o evento transcende a recompensa pelo desempenho, funcionando como um ponto de encontro comunitário que reforça a identidade e os valores do programa. A festa pode, assim, ser uma ferramenta estratégica para o engajamento de um público mais amplo e para o recrutamento indireto, mostrando a força e a união da comunidade de colportagem.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                 <footer class="text-center mt-12 pt-6 border-t border-slate-200">
+                    <p class="text-sm text-slate-500">Relatório gerado em 9 de junho de 2025. Análise baseada em 89 respostas de formulário.</p>
+                </footer>
+            </main>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const tabs = document.querySelectorAll('.nav-tab');
+    const sections = document.querySelectorAll('.content-section');
+
+    function switchTab(tabId) {
+        tabs.forEach(tab => {
+            if (tab.dataset.tab === tabId) {
+                tab.classList.add('tab-active');
+            } else {
+                tab.classList.remove('tab-active');
+            }
+        });
+        sections.forEach(section => {
+            if (section.id === tabId) {
+                section.classList.add('active');
+            } else {
+                section.classList.remove('active');
+            }
+        });
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            switchTab(tab.dataset.tab);
+        });
+    });
+
+    switchTab('geral');
+    
+    const accordions = document.querySelectorAll('.accordion-button');
+    accordions.forEach(button => {
+        button.addEventListener('click', () => {
+            button.classList.toggle('open');
+        });
+    });
+    
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    font: { size: 12 },
+                    padding: 20,
+                    color: '#475569'
+                }
+            },
+            tooltip: {
+                backgroundColor: '#1e293b',
+                titleFont: { size: 14, weight: 'bold' },
+                bodyFont: { size: 12 },
+                padding: 10,
+                cornerRadius: 4
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: '#e2e8f0' },
+                ticks: { color: '#64748b' }
+            },
+            x: {
+                grid: { display: false },
+                ticks: { color: '#64748b' }
+            }
+        }
+    };
+    
+    new Chart(document.getElementById('geralChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Colp. Últimas Férias', 'Colp. Próximas Férias', 'Colp. na Faculdade', 'Presença na Festa'],
+            datasets: [{
+                label: 'Número de Participantes',
+                data: [48, 55, 46, 73],
+                backgroundColor: ['#60a5fa', '#34d399', '#f97316', '#a78bfa'],
+                borderColor: ['#3b82f6', '#10b981', '#ea580c', '#8b5cf6'],
+                borderWidth: 1.5,
+                borderRadius: 4
+            }]
+        },
+        options: { ...chartOptions, plugins: { ...chartOptions.plugins, legend: {display: false} } }
+    });
+
+    new Chart(document.getElementById('equipesChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Shekinah', 'Alpha', 'Podium', 'Ágape', 'Avalanche', 'Maranata', 'Projetando o Futuro', 'Antares', 'Power', 'Vencedores'],
+            datasets: [{
+                label: 'Frequência',
+                data: [35, 32, 30, 29, 18, 18, 15, 13, 13, 12],
+                backgroundColor: '#34d399',
+                borderColor: '#10b981',
+                borderWidth: 1.5,
+                borderRadius: 4
+            }]
+        },
+        options: { ...chartOptions, indexAxis: 'y', plugins: { ...chartOptions.plugins, legend: {display: false} } }
+    });
+    
+    new Chart(document.getElementById('associacoesChart'), {
+        type: 'bar',
+        data: {
+            labels: ['APS', 'APV', 'Paulistana', 'AMS', 'APL', 'ASES', 'AC/ASC', 'APO', 'ARF', 'ARJ'],
+            datasets: [{
+                label: 'Frequência',
+                data: [40, 31, 28, 27, 22, 20, 17, 13, 8, 7],
+                backgroundColor: '#a78bfa',
+                borderColor: '#8b5cf6',
+                borderWidth: 1.5,
+                borderRadius: 4
+            }]
+        },
+        options: { ...chartOptions, indexAxis: 'y', plugins: { ...chartOptions.plugins, legend: {display: false} } }
+    });
+    
+    new Chart(document.getElementById('festaChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Sim, irá à festa', 'Não irá à festa'],
+            datasets: [{
+                data: [73, 16],
+                backgroundColor: ['#f59e0b', '#d1d5db'],
+                borderColor: ['#d97706', '#9ca3af'],
+                borderWidth: 2,
+                hoverOffset: 8
+            }]
+        },
+        options: { ...chartOptions, scales: { x: {display: false}, y: {display: false} } }
+    });
+
+    new Chart(document.getElementById('correlacaoChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Colportou nas Últimas Férias', 'Não Colportou'],
+            datasets: [{
+                label: 'Sim, irá à festa',
+                data: [45, 28],
+                backgroundColor: '#22d3ee',
+                borderColor: '#06b6d4',
+                borderWidth: 1.5,
+                 borderRadius: 4
+            }, {
+                label: 'Não irá à festa',
+                data: [3, 13],
+                backgroundColor: '#fb7185',
+                borderColor: '#f43f5e',
+                borderWidth: 1.5,
+                borderRadius: 4
+            }]
+        },
+        options: { ...chartOptions, scales: { x: { ...chartOptions.scales.x, stacked: true }, y: { ...chartOptions.scales.y, stacked: true } } }
+    });
+});
+</script>
+</body>
+</html>
